@@ -1,0 +1,9 @@
+# Normalize line endings: LF in the repository and working tree
+* text=auto eol=lf
+
+# Binary assets must never be line-ending munged
+*.pdf binary
+
+# Tabs and LF matter here
+Makefile text eol=lf
+*.py     text eol=lf
