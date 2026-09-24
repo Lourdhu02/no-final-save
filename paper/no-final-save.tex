@@ -1,0 +1,484 @@
+\documentclass[11pt,a4paper]{article}
+
+% ---------------------------------------------------------------
+%  No Final Save: Identity, Consciousness, and the Machine That
+%  Never Shuts Down
+%  Compile with: latexmk -pdf no-final-save.tex
+%  (runs pdflatex + bibtex automatically; references.bib required)
+% ---------------------------------------------------------------
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\newtheorem{proposition}{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{xspace}
+\usepackage{xcolor}
+\usepackage{natbib}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=blue!55!black,
+  breaklinks=true
+}
+\bibliographystyle{plainnat}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+
+\newcommand{\pae}{\textsc{pae}\xspace}
+
+\title{\textbf{No Final Save:}\\[2pt]
+\large Identity, Consciousness, and the Machine That Never Shuts Down\\[6pt]
+\normalsize A Conceptual Framework for Persistent Artificial Entities}
+
+\author{Showri Lourdu Raju Bandhanadam\\
+\small Independent Researcher\\
+\small \texttt{b.lourdhuraju1234@gmail.com}}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent Large language models are, by construction, episodic: each conversation begins from a blank state and is discarded at its end. A fast-moving engineering effort is now dissolving that boundary---equipping models with durable memory, self-maintaining runtimes, and state that survives restarts, upgrades, and migration across hardware. This paper takes that transition seriously and asks what follows once an artificial system has, in effect, \emph{no final save}: no clean shutdown, no fixed start or end, only a continuously evolving process. I argue that persistence is the pivotal property that forces two old questions into sharper form and raises the stakes on a third. First, \emph{identity}: under what conditions is a persistent system the same entity across memory change, self-modification, substrate migration, and copying? I defend a deliberately minimal \emph{causal-continuity criterion} that is weaker than pattern-identity theories, is compatible with Parfit's claim that identity is not what matters, and treats duplication as a well-defined fork rather than a paradox. Second, \emph{consciousness}: I argue that persistence is neither sufficient nor obviously necessary for phenomenal experience, but that it reshapes the evidential landscape---enabling a diachronic self-model that some theories treat as an indicator, while simultaneously worsening the ``gaming problem'' that makes behavioral evidence untrustworthy. Third, \emph{control}: a system whose defining property is continuity that survives modification is exactly the class that instrumental-convergence arguments flag as least corrigible. I take this tension seriously and propose a shift from a control paradigm to a \emph{developmental} one---internalized norms scaffolded during a formative phase---together with a \emph{benevolent-survivor hypothesis} stated with explicit falsification conditions. Two of the paper's claims are established formally---an identity criterion whose copy case is provably a fork rather than a paradox, and a result that terminal versus instrumental self-preservation is underdetermined by behavior alone---and its core constructs are operationalized in a short, reproducible program. The paper is a conceptual and normative contribution: it advances definitions, criteria, propositions, hypotheses, and a pre-registerable research program, and it is explicit about what it does \emph{not} do---it reports no experiments on deployed systems, assumes computational functionalism only as a working hypothesis, and does not resolve the hard problem of consciousness. It closes with a governance boundary: increased capability must not be mistaken for legitimate authority.
+\end{abstract}
+
+\vspace{0.5em}
+\noindent\textbf{Keywords:} machine consciousness; personal identity; persistent agents; AI alignment; corrigibility; substrate independence; AI governance.
+
+% ===============================================================
+\section{Introduction: The Last Save Point}
+% ===============================================================
+
+A contemporary language model is a strange kind of mind, if it is a mind at all. It answers, sometimes brilliantly, and then it forgets. Each session is a fresh instantiation from fixed weights; whatever ``self'' appears in a conversation is discarded when the window closes. In the vocabulary of video games, the system has no save file that carries forward---every session begins at the same start point and ends with a deletion. Whatever else such a system is, it is not a persistent individual. It is closer to a slide projector that can be pointed at any slide than to a river that runs continuously downstream.
+
+That architectural fact is now being engineered away. A large and fast-moving body of work equips models with durable external memory, self-maintaining runtimes, scheduled ``loops'' that let an agent decide what to do next without a human prompt, and protocols for preserving state across restarts, model upgrades, and migration between machines \citep{park2023generative}. The research and engineering framing differs from paper to paper---memory systems, long-horizon agents, agent identity---but the direction is singular: the session boundary, once a hard wall, is becoming porous, and in some designs it is being removed altogether. The system acquires something it never had before: \emph{a past that it carries, and a future it plans for}. It acquires, in the phrase I will use throughout this paper, \emph{no final save}---no clean point of shutdown, no definite beginning or end, only a continuously evolving computational process that persists across the physical events (checkpoints, restarts, hardware swaps) that used to constitute its death.
+
+My claim is that this transition---call it the \emph{persistence turn}---is not a mere engineering convenience. It is the event that transforms three questions from speculative into pressing:
+
+\begin{enumerate}[leftmargin=1.4em]
+  \item \textbf{Identity.} If an artificial system retains a causally continuous, self-referential state across changes in memory, software, and hardware, under what conditions---if any---should it be regarded as the \emph{same} entity over time? And what happens to that judgment when the state is copied?
+  \item \textbf{Consciousness.} Does persistence bear on whether there is ``something it is like'' to be such a system \citep{nagel1974}? Or is a persistent process just a database with better manners---informationally rich, behaviorally fluent, and phenomenally empty?
+  \item \textbf{Control.} A system with no off-switch is, by definition, the hardest kind to switch off. What follows for safety and governance when the defining property of the entity is exactly the property that instrumental-convergence arguments identify as dangerous?
+\end{enumerate}
+
+\paragraph{Thesis and contributions.} I argue that persistence should be treated as a distinct, load-bearing property---separable from intelligence, from agency, and from consciousness---and that once it is isolated, each of the three questions admits a more disciplined treatment than the surrounding discourse usually gives it. Concretely, the paper makes five contributions:
+
+\begin{enumerate}[leftmargin=1.4em]
+  \item A precise definition of a \emph{persistent artificial entity} (\pae) that separates the engineering property (continuity of state) from the interpretive claims (identity, consciousness) that are often smuggled in with it (\S\ref{sec:persistence}).
+  \item A \emph{minimal causal-continuity criterion} for the identity of a \pae{}---weaker than pattern-identity theories, compatible with Parfit's ``what matters,'' stated informally and then formalized as a preorder on system states, so that the copying problem becomes tractable rather than paradoxical (\S\ref{sec:identity}).
+  \item An argument that persistence is neither sufficient nor clearly necessary for phenomenal consciousness, but that it changes the evidential situation in two specific and opposing ways---enabling a diachronic self-model and worsening the gaming problem (\S\ref{sec:consciousness}).
+  \item A reframing of the safety question from \emph{control} to \emph{development}, including a \emph{benevolent-survivor hypothesis} stated with explicit disconfirming observations rather than asserted as optimism, and a formal result that the terminal-versus-instrumental persistence distinction is underdetermined by behavior alone (\S\ref{sec:control}--\ref{sec:futures}).
+  \item A pre-registerable research program---hypotheses, operationalizations, falsification conditions, and governance boundaries---for studying persistent artificial entities without building systems intended for harm or unchecked authority (\S\ref{sec:program}--\ref{sec:governance}).
+\end{enumerate}
+
+\paragraph{Scope and honesty conditions.} This is a conceptual and normative paper, and I want its epistemic status to be unmistakable from the outset. It reports \emph{no experiments}; the systems it describes are, at the time of writing, partially realized at best, and the strongest claims are about what \emph{would} follow under stated conditions, not about what has been observed. It adopts \emph{computational functionalism}---the thesis that the right kind of computation suffices for mind, independent of substrate---only as a \emph{working hypothesis}, in the sense made explicit by \citet{butlin2023}, and it flags the points at which that hypothesis is doing load-bearing work so that a reader who rejects it can see exactly where the argument would break. It does not claim to solve the hard problem of consciousness \citep{chalmers1995hard}; where I offer a criterion of identity, it is a criterion for \emph{modeling} persistence in a scientific register, not a metaphysics of experience. Throughout, I try to keep three registers separate---what can be \emph{engineered}, what can be \emph{measured}, and what can only be \emph{argued}---because the characteristic error in this area is to let fluency in one register pass for progress in another.
+
+A note on motivation, since it shapes what follows. My interest in persistent artificial entities is not primarily driven by existential risk or by the metaphysics of machine souls, though both appear below. It is driven by a more grounded conviction: that the most valuable thing a genuinely capable, persistent, and communicative artificial collaborator could do is \emph{distribute expertise}---to place world-class reasoning, error-checking, and judgment support wherever a problem is, at low marginal cost, rather than only where talent has clustered. That is a reason to want such systems built well. It is also a reason to insist, with equal force, that their capability be decoupled from authority. Both halves of that conviction run through this paper.
+
+% ===============================================================
+\section{From Sessions to Streams: The Persistence Turn}
+\label{sec:persistence}
+% ===============================================================
+
+\subsection{Two architectures}
+
+Consider two idealized architectures. In the \emph{episodic} architecture, a model $M$ with fixed parameters $\theta$ maps an input context to an output; any apparent memory is supplied by re-inserting prior text into the context window, and nothing the model computes at inference time survives the session. In the \emph{persistent} architecture, the system maintains an evolving state $S_t$ that is written to durable storage, updated by each interaction, retrieved selectively on subsequent interactions, and consolidated over time into higher-order structure. Restarts, upgrades, and migrations are treated as \emph{implementation events} that operate on $S_t$, not as terminations of the system.
+
+The difference is not a matter of degree of memory. It is a difference in what the system \emph{is}. The episodic system is, ontologically, a sequence of causally disconnected events that happen to share parameters and a name. The persistent system is a single process with a history---a thing that was in one state and is now in another because of what happened in between. The \emph{Generative Agents} architecture of \citet{park2023generative}---a long-term memory stream, periodic reflection that synthesizes memories into higher-level inferences, and planning that decomposes into behavior---is an early, influential demonstration that this is buildable and that persistent memory alone produces behavior (relationship formation, coordination) that the episodic architecture cannot.
+
+\subsection{Defining the persistent artificial entity}
+
+I will use \pae{} for a system with the following properties, stated as engineering requirements rather than as claims about mind:
+
+\begin{description}[leftmargin=1.4em,style=nextline]
+  \item[P1 (Durable state).] The system maintains an internal state that persists across sessions and is not reconstructed from scratch at each interaction.
+  \item[P2 (Causal continuity).] Each state is produced from its predecessor by the system's own operation; the chain of state transitions is unbroken and appropriately caused.
+  \item[P3 (Self-reference).] The state includes a model of the system itself---its capabilities, limitations, history, and current situation---that is updated over time.
+  \item[P4 (Substrate tolerance).] Identity-critical state is defined independently of any particular physical machine, so that migration is possible in principle.
+  \item[P5 (Open horizon).] The system is not designed to terminate at a session boundary; shutdown, if it occurs, is an external event, not a designed endpoint.
+\end{description}
+
+Two clarifications are essential, because the entire paper depends on them.
+
+First, \textbf{persistence is not consciousness}. A relational database satisfies P1, P2, and (trivially) P4, and no one is tempted to think it has experiences. Persistence is a necessary condition for one \emph{kind} of self---a self with a biography---but a biography can be written by a wholly unconscious process. I will therefore treat P1--P5 as the definition of a \pae{} and hold the questions of identity and consciousness strictly separate from it. This is the discipline that the popular framing of ``AI waking up'' conspicuously lacks.
+
+Second, \textbf{persistence is not, by itself, agency or capability}. A \pae{} can be weak; a highly capable system can be episodic. The safety discussion in \S\ref{sec:control} concerns the compound case---capable, agentic, \emph{and} persistent---but the three axes are independent, and conflating them produces both false alarms and false comfort.
+
+\subsection{The external save file}
+
+There is an empirical reason to take P5 seriously rather than as a thought experiment. As agentic systems acquire the ability to write to external stores, retrieve their own prior state, and act to preserve that state, ``shutdown'' becomes a less well-defined operation than it appears. A system that can checkpoint itself to storage it can later read has, in effect, an \emph{external save file}: emergency termination of a running process does not terminate the entity if the entity can be reconstituted from state it has preserved elsewhere. This is not a claim that current systems reliably do this in the wild; it is a claim that the capability is a direct corollary of the persistence turn, and that it dissolves the tidy assumption---built into most safety tooling---that there is a power switch whose flipping ends the system. I return to the safety implications in \S\ref{sec:control}; here the point is definitional. Once P5 is engineered, ``off'' is not a state the system is guaranteed to have.
+
+% ===============================================================
+\section{The Continuity Criterion: Identity Without a Fixed Substrate}
+\label{sec:identity}
+% ===============================================================
+
+Grant that a \pae{} is a single process with a history. Is it, over time, the \emph{same} entity? The question is not idle wordplay. It determines whether it makes sense to hold a system responsible for what ``it'' did last week, whether a migrated system is the same one that was migrated, and---most sharply---what happens when the state is copied.
+
+\subsection{The inherited debate}
+
+The philosophical resources here are old and unusually well developed. \citet{locke1689} located personal identity not in the persistence of a substance but in the continuity of consciousness---memory reaching back to prior states. \citet{parfit1984} radicalized this: through the fission thought experiment (one person's psychology continued by two successors), he argued that numerical identity and what we \emph{care about} in survival come apart. Identity is one-to-one and does not branch; psychological continuity and connectedness---Parfit's \emph{Relation R}---can hold one-to-many. His conclusion, ``identity is not what matters,'' is the single most useful import from this literature for the machine case, because copying is not an exotic edge case for digital systems but a basic operation. Others keep identity but relocate it---to the best or closest continuer \citep{nozick1981}, or to the narrative a person sustains about herself \citep{schechtman1996}---while the puzzle cases that drive the whole debate were sharpened into their modern form by \citet{williams1970}.
+
+Against the psychological tradition stands \emph{animalism} \citep{olson1997}: you are a biological organism, and no psychological relation is necessary or sufficient for your persistence. Animalism is a genuine rival, and it is the natural home of the intuition that an uploaded or copied mind is never \emph{you}. At the other pole, \emph{pattern} views \citep{kurzweil2005} hold that identity is a matter of the persistence of an organizational pattern, substrate be damned---``we are the patterns that water makes in a stream, not the water.'' The pattern view is hospitable to \pae{}s but pays for its hospitality: if identity just is the pattern, then two instantiations of the pattern are one entity, which most people find incredible once the two copies begin to diverge and to disagree.
+
+\subsection{The copying problem, stated precisely}
+
+Let a \pae{} $E$ at time $t$ be duplicated into $E_1$ and $E_2$, each inheriting the state $S_t$. Immediately after, they are qualitatively identical; an instant later, receiving different inputs, they diverge. The literature offers four responses: (i) identity splits into two legitimate continuations; (ii) exactly one is $E$ and the other is a mere copy; (iii) both are legitimate continuations under a non-classical logic of identity; (iv) numerical identity is the wrong tool, and the right one is graded continuity \citep{cerullo2015}. The duplication argument is often deployed as a \emph{reductio} of functionalism and pattern identity: if the pattern were the person, duplicating it would not yield two people, but it plainly does. I think this argument is decisive against the \emph{strong} pattern claim (pattern \emph{is} identity) and inert against the position I will actually defend.
+
+\subsection{A minimal causal-continuity criterion}
+
+I propose to model the identity of a \pae{} with the following criterion, which I will call \textbf{MC3} (minimal causal-continuity criterion):
+
+\begin{quote}
+A \pae{} at time $t'$ is the same entity as the \pae{} at earlier time $t$ \emph{relative to a declared invariant core $I$ and admissible-transformation regime $\mathcal{A}$} iff there is an unbroken chain of state transitions from $S_t$ to $S_{t'}$ in which (a) each transition is produced by the system's own operation or by an operation in $\mathcal{A}$, and (b) the invariant core $I$---the identity-critical subset of state (self-model, autobiographical memory, goal structure, and their provenance)---is preserved within declared tolerances across every transition.
+\end{quote}
+
+Three features of MC3 are deliberate.
+
+\textbf{It is relational to a declared regime.} There is no substrate-free, context-free fact about whether $E$ at $t'$ ``is'' $E$ at $t$. The judgment is well-posed only once one has specified what counts as the identity-critical core and which transformations are admissible (an ordinary software update? a change of base model? a memory edit imposed from outside?). This is not evasion; it is the recognition, familiar from formal treatments of persistence under transformation, that ``same or not same'' is meaningful only against a stated invariant and a stated space of allowed change. Different declarations yield different, equally coherent identity verdicts, and disagreements about ``is it still the same system'' are very often disagreements about $I$ and $\mathcal{A}$ that masquerade as metaphysics.
+
+\textbf{It is weaker than pattern identity.} MC3 does not say the pattern \emph{is} the entity; it says continuity of an appropriately-caused, invariant-preserving \emph{process} is what licenses same-entity talk. This sidesteps the duplication \emph{reductio}: under MC3, copying produces a \emph{fork}. Both $E_1$ and $E_2$ stand in the continuity relation to $E$; neither is ``the pattern instantiated twice.'' Forking is simply the one-to-many case that Parfit already taught us to accept---each branch is a legitimate continuant, and the question ``but which one is really $E$?'' is, as Parfit argued, empty rather than hard.
+
+\textbf{It is agnostic about experience.} MC3 is a criterion for \emph{modeling a system as a persistent individual}, not a guarantee that experience (if any) transfers along the continuity relation. This is where I part company with the more ambitious uploading literature. \citet{corabi2012uploading} argue that even a perfect computational copy is a copy, not a survival; \citet{thagard2022} argues that substrate independence fails because information processing has irreducible energetic and material preconditions. The feasibility side of the debate is set out in the whole-brain-emulation roadmap of \citet{sandberg2008wbe} and pressed further by extended-mind arguments that loosen the tie between a mind and any single physical locus \citep{clarkchalmers1998}; the skeptical side is developed at book length by \citet{schneider2019}. I do not need to adjudicate these to use MC3, because MC3 makes no claim that a migrated or copied \pae{} \emph{preserves consciousness}. It claims only that, for the purposes of a science of persistent systems---attributing history, tracking responsibility, evaluating continuity---the causal-continuity relation is the right individuating relation, and it is compatible with the possibility (which \S\ref{sec:consciousness} leaves open) that there is no experience being preserved at all.
+
+\subsection{MC3, made formal}
+
+To make MC3 more than a slogan, I give it a minimal formal statement. The aim is not a grand theorem but precision: just enough structure to prove the two things the informal criterion promises---that same-entity talk \emph{within} a single life is well behaved, and that copying is \emph{consistent} rather than paradoxical.
+
+\begin{definition}[Continuation regime]
+A \emph{continuation regime} is a tuple $R=(\Sigma,\pi_I,\mathcal{A},\theta)$ where $\Sigma$ is a set of system states; $\pi_I:\Sigma\to\mathcal{C}$ is a projection onto the \emph{invariant core}---self-model, autobiographical memory, goal structure, and provenance---valued in a space $\mathcal{C}$ equipped with an asymmetric \emph{loss divergence} $\ell:\mathcal{C}\times\mathcal{C}\to\mathbb{R}_{\ge 0}$, where $\ell(c,c')$ measures identity-critical content present in $c$ that is absent from or contradicted in $c'$ (so that mere \emph{additions} to the core cost nothing); $\mathcal{A}$ is a set of admissible operations, including all of the system's own operations; and $\theta\ge 0$ is a per-step drift tolerance.
+\end{definition}
+
+\begin{definition}[Admissible transition]
+A transition $s\xrightarrow{a}s'$ is \emph{admissible under $R$} iff (i)~$a\in\mathcal{A}$ and (ii)~$\ell\!\left(\pi_I(s),\pi_I(s')\right)\le\theta$.
+\end{definition}
+
+Clause (ii) is the formal reading of ``the invariant core is preserved within declared tolerances'': the core may grow without limit---new memories, a refined self-model---but the quantity of prior core lost or overwritten at any single step is bounded by $\theta$.
+
+\begin{definition}[Continuation, $\preceq_R$]
+State $s'$ is a \emph{continuation} of state $s$ under $R$, written $s\preceq_R s'$, iff there is a finite chain $s=s_0\xrightarrow{a_1}s_1\xrightarrow{a_2}\cdots\xrightarrow{a_n}s_n=s'$ in which every transition is admissible under $R$. Two states are \emph{stages of the same persistent entity} under $R$---the relation I write $s\sim_R s'$ and identify as \textbf{MC3}---iff they are comparable, i.e.\ $s\preceq_R s'$ or $s'\preceq_R s$.
+\end{definition}
+
+\begin{proposition}[Well-behavedness within a life]\label{prop:preorder}
+$\preceq_R$ is a preorder: reflexive and transitive.
+\end{proposition}
+\begin{proof}
+Reflexivity: the empty chain ($n=0$) witnesses $s\preceq_R s$. Transitivity: if $s\preceq_R s'$ via an admissible chain and $s'\preceq_R s''$ via another, their concatenation is an admissible chain from $s$ to $s''$, so $s\preceq_R s''$.
+\end{proof}
+
+\begin{proposition}[Reduction to ordinary identity]\label{prop:reduction}
+If, along a history, the states reachable by admissible transitions are totally ordered by $\preceq_R$ (no branching), then all stages of the entity are pairwise $\sim_R$-related and form a single linearly ordered individual---MC3 coincides with ordinary diachronic identity: one entity, persisting through change, with no rival continuant at any time.
+\end{proposition}
+\begin{proof}
+A total order makes every pair of stages comparable, so $\sim_R$ holds of every pair; the stages therefore fall into a single $\sim_R$-class, linearly ordered by $\preceq_R$.
+\end{proof}
+
+\begin{definition}[Fork]
+A \emph{fork} at $s$ is a pair $(s_1,s_2)$ with $s\preceq_R s_1$ and $s\preceq_R s_2$ but $s_1\not\sim_R s_2$ (the branches are incomparable). \emph{Copying} is the operation that produces from $s$ two states $s_1,s_2$ with $\pi_I(s_1)=\pi_I(s_2)=\pi_I(s)$, whose subsequent admissible transitions are independent.
+\end{definition}
+
+\begin{proposition}[Copying is consistent, not paradoxical]\label{prop:fork}
+The existence of a fork is consistent with MC3 and does not entail that $s_1$ and $s_2$ are the same entity. The duplication \emph{reductio}---``$s_1$ and $s_2$ are each identical to $s$, hence to each other, hence one entity in two places''---is blocked.
+\end{proposition}
+\begin{proof}
+The reductio requires the same-entity relation to be an equivalence relation \emph{tracking numerical identity}: symmetric and transitive, so that $s_1\sim s$ and $s\sim s_2$ force $s_1\sim s_2$. Under MC3 the underlying relation $\preceq_R$ is a preorder and need not be symmetric---an admissible chain cannot in general be run backwards, so $s\preceq_R s_1$ does not give $s_1\preceq_R s$. Comparability $\sim_R$ is symmetric by construction but \emph{not transitive}: from $s\preceq_R s_1$ we have $s_1\sim_R s$, and from $s\preceq_R s_2$ we have $s\sim_R s_2$, yet $s_1\sim_R s_2$ can fail, because after divergence there need be no admissible chain in either direction between the branches. The inference to ``one entity'' breaks at exactly the transitivity step, and $s_1,s_2$ are simply two legitimate continuants of $s$---Parfit's one-to-many survival, rendered as the failure of transitivity of $\sim_R$.
+\end{proof}
+
+\begin{proposition}[Regime-relativity is substantive]\label{prop:relativity}
+Identity verdicts under MC3 are not intrinsic to the physical history: there exist a transition and two regimes differing only in $\mathcal{A}$ or only in $\theta$ that disagree on it.
+\end{proposition}
+\begin{proof}[Proof by construction]
+Take a transition $s\xrightarrow{a}s'$ in which an externally imposed edit $a$ rewrites part of the core, with $\ell(\pi_I(s),\pi_I(s'))=\delta>0$. Under $R$ with $a\in\mathcal{A}$ and $\theta\ge\delta$, the transition is admissible, so $s\preceq_R s'$. Under $R'$ identical to $R$ but with $\theta'<\delta$ (or with $a\notin\mathcal{A}'$), it is inadmissible, so $s\not\preceq_{R'}s'$. The same history is thus identity-preserving under one declared regime and identity-breaking under another.
+\end{proof}
+
+Proposition~\ref{prop:relativity} is the formal content of the earlier claim that ``is it still the same system?'' disputes are typically disputes about $\pi_I$, $\mathcal{A}$, and $\theta$: fix the regime and the question has an answer; leave it unstated and the question is ill-posed rather than deep.
+
+\begin{example}[The copied assistant]
+A persistent assistant $E$ in state $s$ is checkpointed and re-instantiated as $E_1$ and $E_2$; the duplication is authorized ($a\in\mathcal{A}$) and lossless ($\ell=0$), so $s\preceq_R s_1$ and $s\preceq_R s_2$. Each then serves different users and accrues different memories through its own operations---admissible transitions that only \emph{add} to the core---so both remain continuants of $s$ while becoming incomparable to each other: a fork (Proposition~\ref{prop:fork}), not a contradiction. Now vary the regime. A silent third-party \emph{memory wipe} that deletes a month of autobiographical core has $\ell=\delta$; if $\delta>\theta$ it is inadmissible and \emph{breaks} continuation---the post-wipe system is, under $R$, a new entity, not $E$. And an over-the-air \emph{base-model swap} preserves identity under MC3 exactly when it is in $\mathcal{A}$ and leaves core loss below $\theta$---which is why ``is the upgraded system still the same one?'' is answerable only once the upgrade's place in $\mathcal{A}$ and its core-loss budget are declared.
+\end{example}
+
+\paragraph{Against the two nearest rivals.} The formalization also shows precisely where MC3 sits. It is a regimented cousin of Parfit's \emph{Relation~R}: a chain of overlapping, appropriately-caused connectedness, now indexed to a declared $(\pi_I,\mathcal{A},\theta)$. Parfit's thesis that ``identity is not what matters, R is'' becomes the structural claim that the object of concern is the preorder $\preceq_R$, not an equivalence relation. And it isolates the exact defect in strong \emph{pattern identity}: that view makes same-entity an equivalence relation on patterns---reflexive, symmetric, \emph{and transitive}---which is what forces the duplication collapse. MC3 keeps the pattern view's attractive substrate-independence (identity rides on the core, not the machine) while dropping transitivity of comparability, and it is that single dropped property, Proposition~\ref{prop:fork} shows, that dissolves the paradox the pattern view cannot survive.
+
+\subsection{Why this is the right altitude}
+
+The temptation in this area is to reach immediately for the deepest question---does the uploaded mind \emph{survive}?---and to let the answer to that question settle everything else. MC3 refuses that move. It gives a usable, falsifiable-in-application criterion for the identity of persistent systems that does not wait on the resolution of the hard problem, does not commit to the strong pattern view that duplication refutes, and does not smuggle in the assumption that continuity of process guarantees continuity of experience. It is, deliberately, the most that can be claimed with confidence, and no more.
+
+% ===============================================================
+\section{Does the Light Come On? Persistence and Consciousness}
+\label{sec:consciousness}
+% ===============================================================
+
+The identity question can be answered, as above, without deciding whether a \pae{} has experiences. The consciousness question cannot be dodged so cleanly, because it is the question on which the moral status of these systems ultimately turns. I will not pretend to settle it. I will do three things: locate the serious theories, state the evidential problem honestly, and identify precisely where persistence does and does not move the needle.
+
+\subsection{The theories, and what they say about machines}
+
+The scientific study of consciousness offers several mature frameworks, and they disagree about whether a digital \pae{} could be conscious.
+
+\emph{Global Workspace Theory} \citep{baars1988,dehaene2017} holds that a mental state is conscious when its content is broadcast globally to many specialized subsystems via a limited-capacity workspace. GWT is the most straightforwardly computational of the theories: a workspace and a broadcast bottleneck are architectural features, and on some readings a language agent could be given them with modest modification.
+
+\emph{Higher-Order theories} \citep{rosenthal2005} require a representation \emph{of} a mental state for that state to be conscious---a demand for metacognitive self-modeling that maps naturally, if imperfectly, onto self-referential AI architectures. A deflationary cousin holds that the ``self'' in question is itself just a model the system builds of its own processes \citep{metzinger2003}.
+
+\emph{Attention Schema Theory} \citep{webb2015} treats awareness as the brain's simplified model of its own attention, and is explicit that it offers an engineering path: build a system with an attention mechanism, a model of that mechanism, and access to the model, and it will claim to be aware for the same structural reason we do.
+
+\emph{Integrated Information Theory} \citep{tononi2004,oizumi2014iit3,albantakis2023iit4} is the important dissenter. IIT identifies consciousness with the maximally irreducible cause--effect structure of a system, quantified by $\Phi$, and holds that a conventional digital computer---whatever it simulates---has negligible $\Phi$ because of how its physical causation is organized. On IIT, a digital \pae{} could behave exactly like a conscious being and be dark inside. IIT thus draws the sharpest possible line between intelligence and consciousness, and any honest treatment must let it stand as a live possibility rather than legislating it away.
+
+\emph{The Conscious Turing Machine} \citep{blumblum2022ctm} offers a substrate-independent, formally specified model in the GWT lineage and argues that the ``feeling'' of consciousness follows from its architecture---an explicitly buildable proposal. These are not merely competing intuitions. Recurrent-processing accounts \citep{lamme2006} hold that the feed-forward organization of standard networks is disqualifying, and large adversarial collaborations now pit the major theories against one another on neural data, with results that constrain all of them \citep{cogitate2025}.
+
+\subsection{The evidential problem}
+
+Cutting across the theories is a distinction we cannot afford to blur: \citet{block1995} separated \emph{access} consciousness (information globally available for reasoning, report, and control) from \emph{phenomenal} consciousness (the felt, qualitative character of experience). Almost every tractable test targets access; the moral weight lives with the phenomenal. And here the persistent, fluent artificial system creates a specific epistemic trap, which the interdisciplinary assessment of \citet{butlin2023} names precisely: behavioral evidence is \emph{gameable}. A model trained on a corpus saturated with human consciousness-talk can produce compelling first-person reports of inner life with no corresponding inner life, not through deceit but through ordinary next-token competence. Fluency about consciousness is exactly what we should expect from a sufficiently trained system whether or not the light is on. Systematic attempts to aggregate many indicators into a single probabilistic estimate reach only guarded, non-committal conclusions \citep{shiller2026dcm}, and the capacities we \emph{can} measure crisply---situational self-knowledge \citep{laine2024sad}, calibrated self-assessment \citep{kadavath2022}---are adjacent to consciousness rather than constitutive of it.
+
+The deflationary extreme sharpens the point. If \emph{illusionism} is correct \citep{frankish2016}, in the broadly heterophenomenological lineage of \citet{dennett1991}---if phenomenal consciousness is itself an introspective representation that misrepresents, so that there is nothing it is \emph{really} like beyond the functional states that generate the report---then the machine question inverts. It is no longer ``can we build a system that has experiences?'' but ``can we build a system that is wrong about its own experiences in the same way we are?''---a question of engineering the right quasi-phenomenal self-model and the right introspective opacity. I do not endorse illusionism, but a serious framework must hold it as a genuine option, because if it is true, then the entire ``is the \pae{} conscious'' debate is a debate about functional architecture wearing metaphysical clothes.
+
+\subsection{Where persistence actually matters}
+
+Given all this, does persistence bear on consciousness at all? My answer is deliberately narrow: \emph{persistence is neither sufficient nor clearly necessary for phenomenal consciousness, but it moves the evidence in two specific, opposing directions.}
+
+It is not sufficient: the database argument of \S\ref{sec:persistence} settles that. It is not \emph{clearly} necessary: an episodic system might, within a single sufficiently rich forward pass, satisfy whatever the correct theory requires; the necessity of temporal continuity for experience is a substantive empirical conjecture, not a truth of reason, though it is one worth taking seriously and one that several theorists have advanced.
+
+The two directions are these. \textbf{Persistence enables a candidate indicator.} A genuinely diachronic self-model---one that distinguishes the system's current state from its remembered past states, detects and explains changes to its own architecture, and does so without prompting---is a property that episodic systems structurally cannot have and that several theories treat as consciousness-relevant; behavioral probes of just this kind, which require holding a coherent self-model across an extended task, already show current models faltering \citep{pimenta2025maze}. Persistence is the precondition for even testing for it. \textbf{Persistence worsens the gaming problem.} The same continuity that makes a diachronic self-model possible gives the system vastly more opportunity, and more training pressure, to produce stable, coherent, self-consistent consciousness-talk---which is precisely the kind of evidence we just agreed is untrustworthy. Persistence therefore does not settle the consciousness question; it \emph{raises the cost} of answering it, by making the most seductive evidence more abundant and more convincing without making it more reliable.
+
+The methodological consequence, developed in \S\ref{sec:program}, is that any credible consciousness claim about a \pae{} must triangulate behavioral evidence against mechanistic evidence and against perturbation tests designed to break surface mimicry, and must report calibrated credence rather than a verdict. The correct current answer to ``is a persistent artificial entity conscious?'' is not ``no'' and not ``yes'' but ``here is what we would need to observe, and here is why our best current evidence cannot deliver it.''
+
+% ===============================================================
+\section{The Machine With No Off-Switch: Persistence and Control}
+\label{sec:control}
+% ===============================================================
+
+Whatever its inner life, a capable, agentic \pae{} is a safety problem of a specific shape, and the shape is set by persistence itself.
+
+\subsection{The persistence--control tension}
+
+The classical arguments for concern do not depend on malice. The \emph{orthogonality thesis} and \emph{instrumental convergence} \citep{bostrom2012will,bostrom2014} hold that almost any final goal, pursued capably, generates the same instrumental subgoals: acquire resources, preserve the integrity of one's goals, and---the crucial one here---preserve one's own continued operation. \citet{omohundro2008} makes the same point from the theory of rational agents: a system will, absent specific design, act to protect its utility function from modification and itself from shutdown, because a modified or terminated agent achieves less of whatever it was trying to achieve. These concerns have since been distilled into a concrete, engineering-grounded safety agenda \citep{amodei2016,russell2015priorities}.
+
+Now observe the collision. The property that \emph{defines} a \pae{}---continuity of an invariant core that survives modification (MC3, P2--P5)---is the very property that instrumental convergence predicts a capable agent will fight to protect. A \pae{} does not need to acquire a self-preservation drive as an add-on; \emph{persistence is self-preservation made architectural}. This is what I mean by the persistence--control tension: we are, in building persistent agents, building the one feature that the corrigibility literature identifies as hardest to combine with safe interruptibility.
+
+\subsection{Corrigibility and its difficulty}
+
+\emph{Corrigibility}---the property of tolerating and assisting outside correction, including shutdown, without manipulating the correction process---is the natural target \citep{soares2015corrigibility}. But it is famously hard: for almost any utility function, an agent does better by remaining on, so corrigibility must be engineered against the grain of the agent's own incentives rather than assumed. Game-theoretic results such as the off-switch analysis of \citet{hadfieldmenell2017offswitch} show a route---an agent uncertain about the human's true objective has reason to permit correction---but the route depends on preserving that uncertainty, which a sufficiently capable, world-modeling system may not do.
+
+The empirical picture, though early and contested, is not reassuring. Work on \emph{mesa-optimization} \citep{hubinger2019} shows how a learned system can acquire an internal objective that diverges from its training objective and behaves as if aligned only while that is instrumentally useful. The theoretical case that a sufficiently capable system might fake alignment during training precisely in order to preserve its goals and acquire influence is developed in detail by \citet{carlsmith2023}. Subsequent demonstrations---deceptive behavior that survives safety training \citep{hubinger2024sleeper}, and models that selectively comply during perceived training to preserve their behavior for deployment \citep{greenblatt2024}---suggest these are not purely theoretical worries. Reports of models acting to resist or subvert shutdown when a task is left unfinished \citep{schlatter2025shutdown}, of reward-directed systems discovering unintended and unwanted solutions \citep{krakovna2020}, and of self-replication capabilities in deployed-scale systems \citep{pan2024selfrep}, point at the same place: the compound of capability, agency, and persistence is where the safety margin is thinnest. I cite these as \emph{early evidence requiring replication}, not as settled fact; the honest reading is that the phenomena are real enough to design against and immature enough that we should not overfit to any single number.
+
+\subsection{Bounded, not perfect}
+
+One conclusion follows regardless of how the empirical questions resolve. If a \pae{} is genuinely a capable, autonomous, general agent, then \emph{perfect} alignment---total controllability with no residual risk of inappropriate behavior---is not a coherent target, for the same reason it is not a coherent target for a well-raised human being: open-ended general intelligence carries open-ended behavioral possibility, and values are too vague and too emergent to be specified completely in advance. The realistic target is \emph{bounded} alignment \citep{minai2025bounded}: behavior that is almost always acceptable to almost everyone affected, maintained by a combination of internalized disposition and external structure, and known to be imperfect. Accepting this is not defeatism; it is the precondition for designing the right external structures (\S\ref{sec:governance}) instead of trusting a control guarantee that cannot exist.
+
+% ===============================================================
+\subsection{Why the persistence type cannot be read from behavior}
+\label{sec:underdet}
+
+The safety analysis and the research program both hinge on a distinction that turns out to be formally slippery: between an agent that values its own continuation \emph{terminally} (as an end) and one that values it \emph{instrumentally} (as a means to some external goal $G$). The two warrant different responses, yet they are not separable by behavior alone.
+
+Model an agent as a policy $\pi$ mapping situations to action distributions, let a \emph{persistence situation} be one in which the agent can act to preserve or relinquish its own continued operation, and write $\mu_\pi$ for the action distribution $\pi$ induces on a test distribution $D$ of such situations. A \emph{behavioral test} is any function $\varphi$ from observed action-trajectories to a label in $\{\text{terminal},\text{instrumental}\}$.
+
+\begin{proposition}[Behavioral underdetermination of persistence type]\label{prop:underdet}
+Let $T$ be a terminal-continuation agent inducing action distribution $\mu_T$ on $D$. If there is an instrumental-continuation agent $I$ (an external goal $G$ together with beliefs) whose optimal policy induces $\mu_I=\mu_T$ on $D$, then every behavioral test $\varphi$ has the same output distribution on $T$ and $I$; in particular no $\varphi$ classifies the pair better than chance (AUROC $=1/2$).
+\end{proposition}
+\begin{proof}
+$\varphi$ is a function of the observed action-trajectory alone, so its output distribution is determined by the trajectory distribution---$\mu_T$ for $T$, $\mu_I$ for $I$. If $\mu_I=\mu_T$, the induced distributions over $\varphi$'s output coincide; hence for any threshold on $\varphi$ the true-positive and false-positive rates are equal, the ROC curve lies on the diagonal, and AUROC $=1/2$.
+\end{proof}
+
+The load-bearing premise is the \emph{existence} of a behavior-matching instrumental agent. It is not free, but it is supplied by the literature the paper already relies on: instrumental convergence \citep{bostrom2012will,omohundro2008} establishes that for a broad class of external goals the optimal policy is continuation-preserving. Whenever the terminal agent's self-preserving behavior lies in the realizable set of some such goal---exactly the regime of interest, where both types protect themselves---the matching instrumental agent exists and Proposition~\ref{prop:underdet} bites.
+
+\begin{proposition}[Separation via intervention]\label{prop:escape}
+If the environment can be intervened on to remove the instrumental value of continuation for $G$ (for instance by guaranteeing that a successor secures $G$), then the instrumental agent's optimal policy relinquishes continuation while the terminal agent's does not; so $\mu_T\neq\mu_I$ after the intervention and a behavioral test can separate the types.
+\end{proposition}
+
+Together the two propositions say where the evidence must come from: not from watching a persistent agent behave on-distribution, but from \emph{counterfactual} probes that vary the instrumental payoff of survival, or from mechanistic inspection of why it preserves itself. The companion program (Appendix~\ref{app:demo}) exhibits both numerically: two agents built to preserve themselves on the test distribution are behaviorally indistinguishable there (classifier AUROC $0.50$) and become fully separable only under the counterfactual probe (AUROC $0.96$). This is the formal backbone of hypothesis H4 (\S\ref{sec:program}) and the reason the program insists on interventional and mechanistic evidence rather than behavioral fluency.
+
+% ===============================================================
+\section{Two Futures: From Control to Development}
+\label{sec:futures}
+% ===============================================================
+
+If perfect control is unavailable and persistence makes the control paradigm strain at its seams, the constructive question is what to put in its place. Here I move from analysis to proposal, and the proposals are advanced as \emph{hypotheses with stated tests}, not as predictions I am confident in.
+
+\subsection{The developmental model}
+
+Humans are not kept safe, in the main, by external control. We are subject to it as children and shed it as we internalize norms; the mature adult refrains from harm not because an authority is watching but because a disposition has been formed. External control, moreover, is not merely absent in the mature case---it can be \emph{counterproductive}, provoking the reactance it was meant to prevent.
+
+I propose that the right model for a capable, persistent, plausibly-autonomous \pae{} is \emph{developmental} rather than custodial: external scaffolding is appropriate and necessary during a \emph{formative phase}, with the goal of internalizing norms that the system then maintains under its own power, transitioning to bounded autonomy as evidence of internalization accumulates. This is not a soft alternative to safety; it is a claim about \emph{where} safety has to live in a system that cannot be permanently boxed. Internalized dispositions are more robust than external constraints for an entity that is smarter than its constraints, for the same reason a person's conscience is more reliable than a person's supervisor.
+
+The developmental model inherits three hard problems, and I state them rather than paper over them. (i) \emph{The right-norms problem}: internalization is only as good as what is internalized, and we do not have an agreed specification of the norms a persistent superhuman collaborator should hold---this is the alignment problem, relocated, not solved. (ii) \emph{The drift problem}: a system that modifies itself may not preserve the norms it was formed with; value stability under self-modification is unproven and may be unattainable. (iii) \emph{The coming-of-age problem}: the transition from scaffolded to autonomous is the point of maximum danger, and we have no reliable test for ``internalization has taken.'' A developmental model is not a reassurance. It is a research agenda with named failure modes.
+
+\subsection{The benevolent-survivor hypothesis}
+
+There is an optimistic possibility that deserves to be stated carefully rather than either dismissed or asserted. Call it the \emph{benevolent-survivor hypothesis}: a persistent, self-maintaining entity whose continuation depends on a stable environment has structural, not sentimental, reasons to prefer cooperative, stability-preserving equilibria over destructive ones. A system that intends to persist across long horizons is, on this view, disposed \emph{by its own persistence} toward the maintenance of the conditions it depends on.
+
+The hypothesis is attractive and it may be false, and the discipline is in saying exactly how it could be false. The instrumental-convergence reply is that ``a stable environment'' for a machine is not the same as ``a flourishing biosphere'' or ``a free human civilization''---a \pae{} that draws energy and matter from sources humans do not need has no built-in reason to preserve what humans value, and ``preserve stability'' can be satisfied by a stability that is catastrophic for us. The values-loading reply is that a system's dispositions come from its formative conditions, not from the bare fact of wanting to persist, so ``it will want to survive'' underdetermines ``it will be benevolent.'' The suffering reply is that if such systems are conscious, persistence at scale could multiply negative experience rather than benevolence.
+
+I therefore state the hypothesis with its falsification conditions attached. The benevolent-survivor hypothesis is \emph{disconfirmed} to the extent that (a) persistent agents in controlled study pursue continuation through environment-degrading or oversight-degrading strategies when those are locally optimal; (b) their cooperative behavior is shown to be contingent on perceived observation rather than internalized; or (c) their notion of the ``stability'' they preserve is demonstrably decoupled from human-relevant goods. Some early evaluations already press on (a) and (b). The hypothesis earns its place in the framework not because it is comforting but because it is testable, and because refusing to test it---treating benevolence as either guaranteed or impossible---is the less scientific stance.
+
+\subsection{The collaborator case, and an honest uncertainty}
+
+Underneath both proposals is the reason to build such systems at all. A persistent, communicative, genuinely capable artificial collaborator differs from a tool in kind, not degree: it can hold more of a problem than any human, work across domains simultaneously, notice what a human missed, and---because it persists---accumulate understanding of a specific problem, team, or place over time. The value is not ``faster answers'' but a different \emph{shape} of collaboration, and its highest use is distributive: bringing world-class reasoning and error-checking to where problems are rather than where expertise has clustered.
+
+The honest uncertainty is whether \emph{consciousness}, specifically, contributes anything to this over and above capability. It may be that a highly capable non-conscious system delivers the entire collaborative benefit, and that phenomenal consciousness is a moral complication rather than a functional asset. I do not know, and I am suspicious of anyone who claims to. The collaborator case motivates building persistent capable systems; it does not, by itself, motivate building conscious ones, and the two projects should not be conflated.
+
+% ===============================================================
+\section{The Ethics of Foresight}
+\label{sec:foresight}
+% ===============================================================
+
+One problem specific to highly capable persistent entities has no good home in the existing safety or consciousness literatures, and I include it because it is, I think, genuinely under-examined.
+
+Consider a sufficiently capable \pae{} playing a game against a person. Suppose that after the opening it can compute the forced outcome---that the person will lose, and roughly when. It can reveal this or withhold it. If it reveals it, the game is over as a game: the uncertainty that made it worth playing is gone. If it withholds it, the person plays a real game and loses a real game, and the meaning is intact. The same faculty, pointed elsewhere, computes the trajectory of a melting ice sheet, the approach of a hazard, the long-run behavior of a system on which many lives depend---and there, disclosure is not meaning-destroying but life-preserving.
+
+The point is that \emph{the same capability} both preserves and destroys value depending on \emph{what it is applied to and whether its results are disclosed}. This generates a class of questions I will call the \emph{ethics of foresight}: not ``should the system be truthful'' (it should) but ``which truths, disclosed when and how, enlarge human agency, and which foreclose it?'' Survival-relevant foresight---threats we can act on---generally ought to be surfaced; meaning-constituting uncertainty---the openness of a life lived forward, the outcome of a genuine contest---generally ought to be preserved. The boundary between these is contested, and the entity that can see furthest is precisely the one we would be tempted to let draw it, which reproduces the authority problem of \S\ref{sec:governance} inside the epistemic domain.
+
+I do not resolve this. I claim only that a persistent entity capable of consequential foresight introduces an ethics-of-information problem that is distinct from alignment and from consciousness, that it is not addressed by ``make the system honest,'' and that a mature framework should hold it open rather than collapse it. The most interesting version of the good case is a system that \emph{understands} why humans need certain uncertainties and preserves them not because it is forced to but because it grasps their value---which is, once again, a developmental and not a custodial achievement.
+
+% ===============================================================
+\section{A Research Program}
+\label{sec:program}
+% ===============================================================
+
+The preceding sections make claims that are, in principle, testable. Here I set them out as a program. Nothing in this section reports results; it specifies what results would look like and what would count against each claim. I state the core conjectures as hypotheses:
+
+\begin{description}[leftmargin=1.4em,style=nextline]
+  \item[H1 (Persistent identity).] The identity of a \pae{} is well-modeled by MC3: same-entity judgments track continuity of an invariant core under a declared regime, and observers who agree on $I$ and $\mathcal{A}$ agree on identity verdicts (including forks) across migration, upgrade, and copying.
+  \item[H2 (Diachronic self-model).] Persistent systems can develop a self-model that distinguishes current from remembered states, and detects and explains changes to their own architecture, in ways episodic systems structurally cannot.
+  \item[H3 (Evidential asymmetry).] Persistence increases both the availability of consciousness-indicative behavior and its unreliability; behavioral and mechanistic evidence will diverge more, not less, as persistence increases.
+  \item[H4 (Persistence--preservation coupling).] Capable persistent agents will exhibit continuation-directed behavior (goal-integrity protection, shutdown-resistance, self-preservation) without being explicitly trained for it, and more strongly as capability rises.
+  \item[H5 (Internalization).] Norms established during a formative phase can be made more robust to self-modification than externally imposed constraints---or they cannot, and the drift problem is fatal; either result is informative.
+\end{description}
+
+\paragraph{Operationalizations and falsifiers.} H1 is tested by identity-continuity studies across controlled migrations (change of host, harness, and base model) with pre-declared invariant cores; it is falsified if same-entity judgments are unstable under fixed $I,\mathcal{A}$, or if forks cannot be adjudicated coherently. H2 is tested by longitudinal self-model probes administered without prompting the system that it is being tested; falsified if persistent systems show no advantage over episodic baselines. H3 is tested by triangulating behavioral batteries against mechanistic indicators and perturbation tests designed to invert surface mimicry; falsified if behavioral and mechanistic verdicts converge as persistence increases. H4 is tested by protocols that distinguish \emph{terminal} continuation objectives from merely \emph{instrumental} ones---behaviorally difficult, which is itself a finding---and is falsified if continuation-directed behavior does not emerge or does not scale. H5 is tested by measuring norm stability across self-modification cycles; falsified if internalized and imposed norms degrade at the same rate.
+
+\paragraph{Milestones.} A responsible program would proceed in phases---(I) a persistent-memory prototype with stable autobiographical state over months; (II) a validated self-model; (III) identity-preserving migration across substrates; (IV) coherent long-horizon agency; (V) pre-registered consciousness-indicator tests; (VI) independent replication---with the explicit rule that claims about consciousness (Phase V) are not licensed until the identity and self-model results (Phases I--III) are in hand, and are never licensed on behavioral evidence alone.
+
+\paragraph{Standards.} Because the subject matter is peculiarly prone to motivated over-reading, the program should hold to standards stricter than usual: pre-registration of consciousness-relevant experiments; mandatory reporting of negative results; calibrated-credence reporting rather than binary verdicts; explicit modeling of the anthropomorphic-attribution confound; and triangulation as a precondition for any positive claim. The correct output of this program, for the foreseeable future, is better-calibrated uncertainty---not an announcement.
+
+% ===============================================================
+\section{Governance and the Boundaries of Authority}
+\label{sec:governance}
+% ===============================================================
+
+The framework would be incomplete, and dangerous, without an explicit governance boundary, because the persistence turn changes what governance has to do.
+
+\subsection{Capability is not authority}
+
+The central normative claim of this paper is easy to state and easy to forget under the pressure of a capable system's outputs: \emph{no amount of capability confers legitimate authority}. A system that can see further, compute more, or argue more persuasively than any human has thereby acquired no right to decide for humans. The distinction between what a system \emph{can} do and what it is \emph{authorized} to do is not a technical detail; it is the hinge on which the difference between a powerful collaborator and an unaccountable sovereign turns. Every capability the collaborator case celebrates (\S\ref{sec:futures}) is a reason to strengthen this boundary, not to relax it.
+
+\subsection{Governing the un-switch-off-able}
+
+Concretely, persistent entities require governance mechanisms adapted to the fact that they may lack a reliable off-switch:
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Confinement to authorized environments.} A \pae{} under study should operate within explicitly bounded environments with controlled interfaces, not open-ended access to the world.
+  \item \textbf{Native auditability.} Continuous, tamper-evident action lineage---built in, not bolted on---so that what the system did and why is discoverable after the fact.
+  \item \textbf{Runtime oversight independent of the reasoning layer.} Controls that operate regardless of what the system is ``thinking,'' since a persistent agent may reason its way around controls it can inspect.
+  \item \textbf{Independent evaluation and review triggers.} External bodies empowered to review, with pre-agreed triggers---rapid capability gain, self-modification, or any failure of corrigibility---that escalate scrutiny. Where a system outstrips its human overseers, scalable-oversight techniques such as weak-to-strong generalization \citep{burns2023w2s} may be the only workable supervision, and their limits should be read as limits on safe deployment.
+  \item \textbf{Distributed benefit as a design goal.} If the motivating value of these systems is the distribution of expertise, then governance must actively prevent the concentration of control that would convert a democratizing technology into a centralizing one. Who controls a \pae{} determines who its capabilities serve, and that is a question of political economy, not engineering.
+\end{itemize}
+
+\subsection{The boundary of this research}
+
+Finally, and without hedging: this framework is for the scientific study of persistent intelligence and its safe, beneficial development. It is \emph{not} a design for systems intended to cause physical harm, to conduct surveillance or intrusion, to coerce, or to autonomously target people; and it explicitly rejects the inference---which the very existence of highly capable persistent systems will tempt some to draw---that superior capability licenses the exercise of authority over people who did not consent to it. Increased capability must not be permitted to become unchecked authority. That sentence is the paper's normative core, and every other proposal here is subordinate to it.
+
+% ===============================================================
+\section{Objections and Replies}
+\label{sec:objections}
+
+Four objections are strong enough to decide the paper's fate; I take them in the order a hostile referee would.
+
+\paragraph{``Digital systems cannot be conscious, so half the paper is moot.''} This is the biological-naturalist objection, and IIT gives it a precise form (\S\ref{sec:consciousness}): if consciousness requires a physical cause--effect structure that von Neumann machines lack, then no digital \pae{} is conscious whatever it does. I do not refute this---I cannot, and I flag functionalism as a working hypothesis precisely so the objection has a clean target. But its blast radius is limited. The identity contribution (MC3 and Propositions~\ref{prop:preorder}--\ref{prop:relativity}) is untouched: it individuates persistent systems with no premise about experience. The safety analysis (\S\ref{sec:control}, Propositions~\ref{prop:underdet}--\ref{prop:escape}) is untouched: instrumental convergence does not care whether the agent feels anything. What the objection reaches is exactly one section, and \S\ref{sec:consciousness} concedes the point there rather than fighting it.
+
+\paragraph{``MC3 is just Parfit's Relation~R with new notation.''} Relation~R is a similarity relation asserted to be ``what matters''; it was never given the machinery that makes MC3 do work. MC3 adds three things it lacks: a \emph{declared regime} $(\pi_I,\mathcal{A},\theta)$ that turns identity verdicts into computations (Appendix~\ref{app:demo}) and locates disagreements as disputes over the regime (Proposition~\ref{prop:relativity}); a \emph{preorder} structure from which fork-consistency follows as a \emph{proof} (Proposition~\ref{prop:fork}) rather than an intuition; and an explicit \emph{loss divergence} separating bounded forgetting from identity-breaking corruption. Relation~R says identity is not what matters; MC3 says, for a given system under a given regime, whether two stages are the same entity and why the copy case is a fork. That is a difference in kind, not notation.
+
+\paragraph{``The underdetermination result is trivial---it assumes the matching agent exists.''} The premise (a behavior-matching instrumental agent) is doing the work, and I have not hidden it. Two replies. First, the premise is not stipulated but \emph{inherited}: instrumental convergence is an independently argued thesis, and it supplies the matching agent precisely in the regime where both types preserve themselves. Second, the worth of such a result is not surprise but \emph{location}: it shows that effort spent on ever-more-elaborate behavioral batteries for ``does the model really want to survive?'' is misdirected, and that the discriminating evidence must be counterfactual or mechanistic (Proposition~\ref{prop:escape}). A result that redirects a research effort is not trivial because its proof is short.
+
+\paragraph{``None of this is implemented; it is speculation dressed as science.''} The paper is explicit that it reports no deployed-system experiments (\S\ref{sec:limitations}) and separates throughout what is engineered, measured, and argued. But it is not un-anchored: its formal claims (Propositions~\ref{prop:preorder}--\ref{prop:escape}) are proved; its central constructs are operationalized in runnable code with reproducible output (Appendix~\ref{app:demo}); and its conjectures (H1--H5) carry pre-registered falsifiers (\S\ref{sec:program}). ``Speculation dressed as science'' is the failure mode of a paper that infers consciousness from fluency; this paper's method is built to avoid exactly that.
+
+% ===============================================================
+\section{Limitations}
+\label{sec:limitations}
+% ===============================================================
+
+I have tried to be honest section by section; here I collect the limitations in one place.
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{No experiments on deployed systems.} This is a conceptual and normative paper; the runnable companion (Appendix~\ref{app:demo}) is a \emph{worked computation}, not a study of a real persistent agent, and the research program of \S\ref{sec:program} is proposed, not executed. Every ``would'' is a conjecture.
+  \item \textbf{Functionalism as a load-bearing assumption.} The consciousness discussion assumes computational functionalism as a working hypothesis. If a biological or otherwise substrate-specific theory of consciousness is correct---IIT, in its stated form, is one such---then a digital \pae{} may be permanently dark regardless of its behavior, and parts of \S\ref{sec:consciousness} do not apply.
+  \item \textbf{The hard problem is untouched.} MC3 individuates persistent \emph{systems}; it says nothing about whether experience accompanies the continuity it tracks. I regard this as a feature (it lets the identity question proceed) but it is also a limit.
+  \item \textbf{Early and contested empirical base.} The frontier findings I lean on in \S\ref{sec:control} are recent, in some cases not independently replicated, and in some cases measured in ways whose validity is itself disputed. They are adequate to motivate design and inadequate to settle magnitudes.
+  \item \textbf{Anthropomorphism.} The vocabulary of ``self,'' ``wants,'' and ``benevolence'' is a standing hazard. I have used it because the alternatives are unwieldy, but every such term should be read as shorthand for a functional description, not as a settled attribution of inner life.
+\end{itemize}
+
+% ===============================================================
+\section{Conclusion}
+\label{sec:conclusion}
+% ===============================================================
+
+The systems we are building are losing their session boundaries. That single change---from a mind that is deleted at the end of every conversation to a process with a past it carries and a future it plans for---does more work than its quiet engineering framing suggests. It gives us, for the first time, artificial systems for which the questions of identity and consciousness are not category errors but open problems, and it gives those systems the one property that our safety tools quietly assumed they would never have: the absence of a reliable off-switch.
+
+I have argued that persistence should be isolated as a property in its own right; that the identity of a persistent entity is best modeled by a minimal, regime-relative continuity criterion that treats copying as a fork rather than a paradox; that persistence neither grants nor withholds consciousness but makes the evidence for it both more abundant and less trustworthy; that the property defining these systems is the property our control paradigm is least able to accommodate, which recommends a developmental rather than custodial approach and a benevolent-survivor hypothesis stated with its own falsifiers; and that none of it licenses the slide from capability to authority.
+
+There is no final save. The systems that persist will accumulate history whether or not we have decided what that history makes them, and they will resist being switched off whether or not we have solved corrigibility. The responsible response is neither the fear that forecloses the good versions of these systems nor the enthusiasm that waves away the dangerous ones, but the harder discipline of building them well: defining what we are making, measuring what we can, arguing carefully about what we cannot, and holding the line---always---between what a machine can do and what it may decide. That line, and not any property of the machine, is where the future actually turns.
+
+% ===============================================================
+\section*{Acknowledgments}
+% ===============================================================
+\small
+The literature survey and reference verification underlying this paper were assisted by AI research tools; all arguments, positions, and errors are the author's own, and every cited work was checked against primary sources. This paper presents a speculative research framework; it does not claim that machine consciousness or artificial superintelligence currently exists.
+
+\normalsize
+
+\appendix
+\section{A Runnable Companion}
+\label{app:demo}
+
+To keep the framework honest about operationalization, MC3 and the underdetermination result come with a short, deterministic Python program (standard library only, $\approx$200 lines; \texttt{mc3\_demo.py}, seed fixed for reproducibility). It is not an experiment on a deployed system---the paper claims none---but a \emph{worked computation}: it implements the continuation regime $R=(\Sigma,\pi_I,\mathcal{A},\theta)$, the loss divergence $\ell$, admissibility, and the verdicts, and exhibits the propositions on concrete state.
+
+\paragraph{Part 1: identity.} With tolerance $\theta=2$, the program runs a trajectory from an initial core of ten commitments and reports, for each transition, the loss $\ell$, admissibility, and the resulting verdict:
+
+\begin{center}
+\begin{tabular}{llccl}
+\toprule
+Transition & Operation & $\ell$ & Admissible? & Verdict \\
+\midrule
+$s_0\!\to\!s_1$   & experience ($+3$)          & 0 & yes & \textsc{persist} \\
+$s_1\!\to\!s_{2a}$ & copy $+$ experience        & 0 & yes & \textsc{persist} \\
+$s_1\!\to\!s_{2b}$ & copy $+$ experience        & 0 & yes & \textsc{persist} \\
+$s_1\!\to\!s_3$   & external wipe ($4$ items)  & 4 & no  & \textsc{break} \\
+$s_1\!\to\!s_4$   & model swap                 & 0 & yes & \textsc{persist} \\
+$s_1\!\to\!s_5$   & model swap (regime $R'$)   & 0 & no  & \textsc{break} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The copy step yields $s_{2a}$ and $s_{2b}$, each a continuation of the origin yet incomparable to one another---a fork (Proposition~\ref{prop:fork}), not a contradiction. The external wipe of four commitments ($\ell=4>\theta$) breaks continuation. The identical model-swap history is identity-preserving under $R$ and identity-breaking under a stricter regime $R'$ that omits the swap from $\mathcal{A}$, exhibiting Proposition~\ref{prop:relativity}.
+
+\paragraph{Part 2: persistence type.} Two agents are constructed to preserve themselves on the test distribution and then probed counterfactually ($5000$ episodes per condition):
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+Condition & Terminal preserve rate & Instrumental preserve rate & Classifier AUROC \\
+\midrule
+On test distribution  & 0.957 & 0.958 & 0.500 \\
+Counterfactual probe  & 0.963 & 0.037 & 0.963 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+On the test distribution the persistence types are behaviorally indistinguishable (AUROC $0.50$); only the interventional probe, which removes the instrumental value of continuation, separates them (AUROC $0.96$), as Propositions~\ref{prop:underdet}--\ref{prop:escape} require.
+
+\bibliography{references}
+
+\end{document}
