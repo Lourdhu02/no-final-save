@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use this repository or the paper, please cite the paper below."
+title: "No Final Save: Identity, Consciousness, and the Machine That Never Shuts Down"
+abstract: >-
+  A conceptual framework for persistent artificial entities. Argues that the shift from
+  session-bounded models to persistent systems with no clean shutdown forces the questions
+  of identity and consciousness into sharper form and raises the stakes on control; defends
+  a minimal causal-continuity criterion for identity, proves that terminal versus instrumental
+  self-preservation is behaviorally underdetermined, and proposes a developmental rather than
+  custodial safety model.
+type: software
+authors:
+  - family-names: "Bandhanadam"
+    given-names: "Showri Lourdu Raju"
+    affiliation: "Independent Researcher"
+    email: "b.lourdhuraju1234@gmail.com"
+keywords:
+  - machine consciousness
+  - personal identity
+  - persistent agents
+  - AI alignment
+  - corrigibility
+  - substrate independence
+  - AI governance
+license: MIT
+preferred-citation:
+  type: article
+  title: "No Final Save: Identity, Consciousness, and the Machine That Never Shuts Down"
+  authors:
+    - family-names: "Bandhanadam"
+      given-names: "Showri Lourdu Raju"
+      affiliation: "Independent Researcher"
+  year: 2026
